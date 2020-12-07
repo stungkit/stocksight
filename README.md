@@ -1,30 +1,25 @@
 <img src="/docs/stocksight.png?raw=true" alt="stocksight" />
 
-# stocksight
-Crowd-sourced stock analyzer and stock predictor using Elasticsearch, Twitter, News headlines and Python natural language processing and sentiment analysis. How much do emotions on Twitter and news headlines affect a stock's price? Let's find out ...
-
 [![License](https://img.shields.io/github/license/shirosaidev/stocksight.svg?label=License&maxAge=86400)](./LICENSE)
 [![Release](https://img.shields.io/github/release/shirosaidev/stocksight.svg?label=Release&maxAge=60)](https://github.com/shirosaidev/stocksight/releases/latest)
 [![Sponsor Patreon](https://img.shields.io/badge/Sponsor%20%24-Patreon-brightgreen.svg)](https://www.patreon.com/shirosaidev)
 [![Donate PayPal](https://img.shields.io/badge/Donate%20%24-PayPal-brightgreen.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=CLF223XAS4W72)
 
+# stocksight
+Stock market analyzer and stock predictor using Elasticsearch, Twitter, News headlines and Python natural language processing and sentiment analysis. How much do emotions on Twitter and news headlines affect a stock's price? Let's find out...
+
 ## About
-stocksight is a crowd-sourced stock analysis open source software that uses Elasticsearch to store Twitter and news headlines data for stocks. stocksight analyzes the emotions of what the author writes and does sentiment analysis on the text to determine how the author "feels" about a stock. stocksight makes an aggregated analysis of all collected data from all sources.
+stocksight is an open source stock market analysis software that uses Elasticsearch to store Twitter and news headlines data for stocks. stocksight analyzes the emotions of what the author writes and does sentiment analysis on the text to determine how the author "feels" about a stock.
 
-Each user running stocksight has a unique fingerprint: specific stocks they are following, news sites and twitter users they follow to find information for those stocks. This creates a unique sentiment analysis for each user, based on what data sources they are getting stocksight to search. Users can have the same stocks, but their data sources could vary significantly creating different sentiment analysis for the same stock. stocksight website will allow each user to see other sentiment analysis results from other stocksight user app results and a combined aggregated view of all.
-
-## Stocksight website
-https://stocksight.diskoverspace.com
-Currently in BETA. Free signup. Once you are registered and login, you will be given a token which you need to add to your stocksight config file to upload your stocksight results to the website. Edit config.py and add the line
-
-`stocksight_token = "<your auth token>"`
 
 ## Slack workspace
 Join the conversation, get support, etc on [stocksight Slack](https://join.slack.com/t/stocksightworkspace/shared_invite/enQtNzk1ODI0NjA3MTM4LTA3ZDA0YzllOGNiM2I5ZjAzYWM2MjNmMjI0OTRlY2ZjYTk1NmM5YmEwMmMwOTE2OTNiMGZlNzdjZmZkM2RjM2U).
 
 
 ## Requirements
-- Python 3. (tested with Python 3.6.5)
+- Python 3.x
+- Elasticsearch 5.x
+- Kibana 5.x
 - elasticsearch python module
 - nltk python module
 - requests python module
@@ -33,10 +28,6 @@ Join the conversation, get support, etc on [stocksight Slack](https://join.slack
 - textblob python module
 - vaderSentiment python module
 - newspaper3k python module
-
-## Optional installs
-- Elasticsearch 5.  (Elasticsearch is recommended but can be not used with --noelasticsearch)
-- Kibana 5.  (Kibana is recommended for searching/visualizing the Elasticsearch indices)
 
 ### Download
 
@@ -50,31 +41,51 @@ $ cd stocksight
 Stocksight Kibana dashboard
 <img src="https://github.com/shirosaidev/stocksight/blob/master/docs/stocksight-dashboard-kibana.png?raw=true" alt="stocksight kibana dashboard" />
 
-Stocksight website
-<img src="https://github.com/shirosaidev/stocksight/blob/master/docs/stocksight_website_screenshot.png?raw=true" alt="stocksight website dashboard" />
 
-## How to use
+## Install - Docker
 
-Install python requirements using pip
+*** **See [how to use](#how-to-use) below before building the Docker containers** ***
+
+1) Download/clone stocksight repo with git.
+2) Set up stocksight, elasticsearch and kibana containers using Docker compose
+```
+cd stocksight
+cp config.py.sample config.py
+***see how to use below for config.py (stocksight config) changes***
+docker-compose build && docker-compose up
+```
+**This will volume mount config.py (stocksight settings) and twitteruserids.txt to those files in your local git cloned "stocksight" directory**
+
+3) Once all the containers have started up, shell into the container
+
+`docker exec -it stocksight_stocksight_1 bash`
+
+4) See examples below for running stocksight.
+
+## Install - local
+
+**Recommended to install Elasticsearch and Kibana in local machine or other machine/vm/docker**
+
+1) Install python requirements using pip
 
 `pip install -r requirements.txt`
 
-Install python nltk data
+2) Install python nltk data
 
 `python -c "import nltk; nltk.download('punkt'); nltk.download('stopwords')"`
 
-Create a new twitter application and generate your consumer key and access token. https://developer.twitter.com/en/docs/basics/developer-portal/guides/apps.html
+
+## How to use
+1) Create a new twitter application and generate your consumer key and access token. https://developer.twitter.com/en/docs/basics/developer-portal/guides/apps.html
 https://developer.twitter.com/en/docs/basics/authentication/guides/access-tokens.html
 
-Copy config.py.sample to config.py
+2) Copy config.py.sample to config.py (stocksight config file)
 
-Set elasticsearch settings in config.py for your env
+3) Set elasticsearch settings in config.py for your env (for Docker, set `elasticsearch_host = "elasticsearch"`)
 
-Add twitter consumer key/access token and secrets to config.py
+4) Add twitter consumer key/access token and secrets to config.py
 
-Edit config.py and modify NLTK tokens required/ignored and twitter feeds you want to mine. NLTK tokens required are keywords which must be in tweet before adding it to Elasticsearch and uploaded to StockSight website (whitelist). NLTK tokens ignored are keywords which if are found in tweet, it will not be added to Elasticsearch and uploaded to StockSight website (blacklist).
-
-These settings (tokens, feeds) and optional keywords for tweets, are what creates your unique fingerprint and helps with the crowd-sourcing of the stock symbol data mining and sentiment accuracy on StockSight website. The higher number of unique and valid data sources, the more accurate the sentiment analysis average should be.
+5) Edit config.py and modify NLTK tokens required/ignored and twitter feeds you want to mine. NLTK tokens required are keywords which must be in tweet before adding it to Elasticsearch (whitelist). NLTK tokens ignored are keywords which if are found in tweet, it will not be added to Elasticsearch (blacklist).
 
 ### Examples
 
@@ -84,16 +95,10 @@ Run sentiment.py to create 'stocksight' index in Elasticsearch and start mining 
 $ python sentiment.py -s TSLA -k 'Elon Musk',Musk,Tesla,SpaceX --debug
 ```
 
-Start mining and analyzing Tweets using keywords and upload sentiment results to stocksight website (requires website auth token) using the stock symbol and stocksight website symbol TSLA. The website symbol is the "tag name" for the sentiment data being uploaded
-
-```sh
-$ python sentiment.py -s TSLA -k 'Elon Musk',Musk,Tesla,SpaceX -U --debug
-```
-
 Start mining and analyzing Tweets using keywords and the stock symbol TSLA and follow any url links in tweets and performing sentiment analysis on the link web page as well as the tweet
 
 ```sh
-$ python sentiment.py -s TSLA -k 'Elon Musk',Musk,Tesla,SpaceX -l -U --debug
+$ python sentiment.py -s TSLA -k 'Elon Musk',Musk,Tesla,SpaceX -l --debug
 ```
 
 Start mining and analyzing Tweets from feeds in config using cached user ids from file (if you change any of the twitter  feeds in the config file, you need to delete this file and recreate it without -f)
@@ -114,14 +119,19 @@ Run stockprice.py to add stock prices to 'stocksight' index in Elasticsearch
 $ python stockprice.py -s TSLA --debug
 ```
 
-Load 'stocksight' index in Kibana and import export.json file for visuals/dashboard.
+### Kibana
+
+Load 'stocksight' index in Kibana. For index pattern you can use 'stocksight' if you only have the single index or 'stocksight-*', etc. For time-field name you will want to use the date/time field 'date'.
+
+To import the saved exported visualizations/dashboard, go to Kibana, click on management, click on saved objects, click on the import button and import the export.json file.
+
 
 ### CLI options
 
 ```
 usage: sentiment.py [-h] [-i INDEX] [-d] -s SYMBOL [-k KEYWORDS] [-a] [-u URL]
                     [-f FILE] [-l] [-n] [--frequency FREQUENCY]
-                    [--followlinks] [-U] [-w] [--noelasticsearch]
+                    [--followlinks] [-w]
                     [--overridetokensreq TOKEN [TOKEN ...]]
                     [--overridetokensignore TOKEN [TOKEN ...]] [-v] [--debug]
                     [-q] [-V]
@@ -133,10 +143,7 @@ optional arguments:
   -d, --delindex        Delete existing Elasticsearch index first
   -s SYMBOL, --symbol SYMBOL
                         Stock symbol you are interesed in searching for,
-                        example: TSLA This is used as the symbol tag on
-                        stocksight website. Could also be set to a tag name
-                        like 'elonmusk' or 'elon' etc. Cannot contain spaces
-                        and more than 25 characters.
+                        example: TSLA
   -k KEYWORDS, --keywords KEYWORDS
                         Use keywords to search for in Tweets instead of feeds.
                         Separated by comma, case insensitive, spaces are ANDs
@@ -154,9 +161,7 @@ optional arguments:
                         (default: 120 sec)
   --followlinks         Follow links on news headlines and scrape relevant
                         text from landing page
-  -U, --upload          Upload sentiment to stocksight website (BETA)
   -w, --websentiment    Get sentiment results from text processing website
-  --noelasticsearch     Don't connect or add new docs to Elasticsearch
   --overridetokensreq TOKEN [TOKEN ...]
                         Override nltk required tokens from config, separate
                         with space
@@ -167,9 +172,8 @@ optional arguments:
   --debug               Debug message output
   -q, --quiet           Run quiet with no message output
   -V, --version         Prints version and exits
-  ```
   
-  ```
+  
 usage: stockprice.py [-h] [-i INDEX] [-d] [-s SYMBOL] [-f FREQUENCY] [-v]
                      [--debug] [-q] [-V]
 
